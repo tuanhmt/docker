@@ -1,0 +1,70 @@
+# Builds the php image (fpm and cli) and pushes it to Docker Hub:
+#
+#   <user>/php:8.2-fpm      moving tag, latest 8.2.x build
+#   <user>/php:8.2.35-fpm   exact PHP version, for pinning
+#   (same tags with -cli)
+#
+# Images are pushed only from the main branch. Pull requests build and test
+# without pushing. The weekly run picks up Debian and PHP security updates.
+#
+# Repository secrets: DOCKERHUB_USERNAME, DOCKERHUB_TOKEN (a Docker Hub
+# access token with read and write access).
+
+name: php
+
+on:
+  push:
+    branches: [main]
+    paths: ["php/**", ".github/workflows/php.yml"]
+  pull_request:
+    paths: ["php/**", ".github/workflows/php.yml"]
+  schedule:
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php_version: ["8.2"]
+    defaults:
+      run:
+        working-directory: php
+    env:
+      PHP_VERSION: ${{ matrix.php_version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          docker build --pull --build-arg PHP_VERSION --target fpm -t local/fpm .
+          docker build --build-arg PHP_VERSION --target cli -t local/cli .
+
+      # Smoke tests: fail the job before pushing a broken image.
+      - name: Test
+        run: |
+          docker run --rm local/fpm php-fpm -t
+          docker run --rm local/fpm php -r '
+            foreach (["apcu", "bcmath", "gd", "imagick", "intl", "Zend OPcache", "pdo_mysql", "redis", "zip"] as $e) {
+              if (!extension_loaded($e)) { echo "missing $e\n"; exit(1); }
+            }
+            echo "extensions ok\n";'
+          docker run --rm local/fpm sh -c 'test "$(id -u)" = 7000 && command -v mysql'
+          docker run --rm local/cli sh -c 'composer --version && git --version && patch --version'
+
+      - name: Push
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+          PHP_FULL=$(docker run --rm local/fpm php -r 'echo PHP_VERSION;')
+          IMAGE="$DOCKERHUB_USERNAME/php"
+          for target in fpm cli; do
+            for version in "$PHP_VERSION" "$PHP_FULL"; do
+              docker tag "local/$target" "$IMAGE:$version-$target"
+              docker push "$IMAGE:$version-$target"
+            done
+          done

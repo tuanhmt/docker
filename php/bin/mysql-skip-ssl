@@ -1,0 +1,26 @@
+#!/bin/sh
+# Installed as /usr/local/bin/mysql and /usr/local/bin/mysqldump, ahead of
+# /usr/bin in PATH.
+#
+# The db service runs without TLS, but MariaDB 11.4+ clients require TLS by
+# default ("SSL is required, but the server does not support it"). Drush
+# starts the client with --defaults-file, which stops it from reading
+# /etc/mysql, so an option file cannot turn TLS off. This wrapper adds
+# --skip-ssl on the command line instead. --defaults-file and
+# --defaults-extra-file must stay the first option, so --skip-ssl goes
+# after them.
+
+case "$(basename "$0")" in
+  mysqldump) client=/usr/bin/mariadb-dump ;;
+  *) client=/usr/bin/mariadb ;;
+esac
+
+case "$1" in
+  --defaults-file=*|--defaults-extra-file=*)
+    first=$1
+    shift
+    exec "$client" "$first" --skip-ssl "$@"
+    ;;
+esac
+
+exec "$client" --skip-ssl "$@"
