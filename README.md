@@ -14,7 +14,7 @@ GitHub Actions workflow in `.github/workflows/<folder>.yml`. A workflow runs
 only when its folder changes, plus once a week to pick up security updates
 from the base images.
 
-Workflows push to Docker Hub from the `main` branch only. Pull requests
+Workflows push to Docker Hub from the `master` branch only. Pull requests
 build and test without pushing.
 
 ## Adding an image

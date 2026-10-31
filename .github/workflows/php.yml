@@ -4,7 +4,7 @@
 #   <user>/php:8.2.35-fpm   exact PHP version, for pinning
 #   (same tags with -cli)
 #
-# Images are pushed only from the main branch. Pull requests build and test
+# Images are pushed only from the master branch. Pull requests build and test
 # without pushing. The weekly run picks up Debian and PHP security updates.
 #
 # Repository secrets: DOCKERHUB_USERNAME, DOCKERHUB_TOKEN (a Docker Hub
@@ -14,7 +14,7 @@ name: php
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths: ["php/**", ".github/workflows/php.yml"]
   pull_request:
     paths: ["php/**", ".github/workflows/php.yml"]
@@ -54,7 +54,7 @@ jobs:
           docker run --rm local/cli sh -c 'composer --version && git --version && patch --version'
 
       - name: Push
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        if: github.ref == 'refs/heads/master' && github.event_name != 'pull_request'
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
