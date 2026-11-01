@@ -27,6 +27,8 @@ RUN apt-get update && \
 
 COPY --chmod=755 bin/mysql-skip-ssl /usr/local/bin/mysql
 COPY --chmod=755 bin/mysql-skip-ssl /usr/local/bin/mysqldump
+COPY --chmod=755 bin/mysql-skip-ssl /usr/local/bin/mariadb
+COPY --chmod=755 bin/mysql-skip-ssl /usr/local/bin/mariadb-dump
 
 RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 COPY conf/php/zz-base.ini $PHP_INI_DIR/conf.d/zz-base.ini

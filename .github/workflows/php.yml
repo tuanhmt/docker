@@ -50,7 +50,9 @@ jobs:
               if (!extension_loaded($e)) { echo "missing $e\n"; exit(1); }
             }
             echo "extensions ok\n";'
-          docker run --rm local/fpm sh -c 'test "$(id -u)" = 7000 && command -v mysql'
+          docker run --rm local/fpm sh -c 'test "$(id -u)" = 7000'
+          # The SQL clients must go through the --skip-ssl wrapper.
+          docker run --rm local/fpm sh -c 'for c in mysql mysqldump mariadb mariadb-dump; do test "$(command -v $c)" = "/usr/local/bin/$c" || { echo "$c is not the wrapper"; exit 1; }; done'
           docker run --rm local/cli sh -c 'composer --version && git --version && patch --version'
 
       - name: Push

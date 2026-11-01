@@ -1,6 +1,7 @@
 #!/bin/sh
-# Installed as /usr/local/bin/mysql and /usr/local/bin/mysqldump, ahead of
-# /usr/bin in PATH.
+# Installed as /usr/local/bin/mysql, mysqldump, mariadb and mariadb-dump,
+# ahead of /usr/bin in PATH. Drush 13 calls mariadb and mariadb-dump, older
+# tools call mysql and mysqldump.
 #
 # The db service runs without TLS, but MariaDB 11.4+ clients require TLS by
 # default ("SSL is required, but the server does not support it"). Drush
@@ -11,7 +12,7 @@
 # after them.
 
 case "$(basename "$0")" in
-  mysqldump) client=/usr/bin/mariadb-dump ;;
+  mysqldump|mariadb-dump) client=/usr/bin/mariadb-dump ;;
   *) client=/usr/bin/mariadb ;;
 esac
 
