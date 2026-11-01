@@ -57,7 +57,11 @@ COPY conf/php-fpm/zz-pool.conf /usr/local/etc/php-fpm.d/zz-pool.conf
 # Defaults for conf/php-fpm/zz-pool.conf. Override them per site with
 # ENV in the site's Dockerfile or in docker-compose.
 ENV PHP_MEMORY_LIMIT=256M \
-    PHP_FPM_MAX_CHILDREN=20
+    PHP_FPM_MAX_CHILDREN=20 \
+    PHP_FPM_START_SERVERS=6 \
+    PHP_FPM_MIN_SPARE_SERVERS=4 \
+    PHP_FPM_MAX_SPARE_SERVERS=12 \
+    PHP_OPCACHE_VALIDATE_TIMESTAMPS=0
 
 ARG APP_USER=app
 RUN groupadd -g ${SETUID} ${APP_USER} && \

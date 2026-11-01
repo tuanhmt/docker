@@ -31,6 +31,10 @@ Set these as environment variables on the fpm container:
 |---|---|---|
 | `PHP_MEMORY_LIMIT` | `256M` | Memory limit per web request |
 | `PHP_FPM_MAX_CHILDREN` | `20` | Maximum PHP-FPM worker processes |
+| `PHP_FPM_START_SERVERS` | `6` | Workers started with PHP-FPM |
+| `PHP_FPM_MIN_SPARE_SERVERS` | `4` | Minimum idle workers |
+| `PHP_FPM_MAX_SPARE_SERVERS` | `12` | Maximum idle workers |
+| `PHP_OPCACHE_VALIDATE_TIMESTAMPS` | `0` | Set to `1` when the code is mounted from the host and edited, so PHP sees changes |
 
 ## Use in a site's Dockerfile
 
